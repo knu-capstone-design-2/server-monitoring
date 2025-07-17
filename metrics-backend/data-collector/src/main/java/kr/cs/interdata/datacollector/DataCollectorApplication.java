@@ -108,7 +108,6 @@ class KafkaProducerRunner implements CommandLineRunner {
                     }
                 });
 
-                Thread.sleep(1000);
             }
         }
     }
