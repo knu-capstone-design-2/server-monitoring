@@ -236,6 +236,49 @@ public class ThresholdService {
     // 2. Abnormal Log History Retrieval
     // ==============================
 
+    public List<Map<String, Object>> getThresholdHistoryforDate(String date) {
+        List<AbnormalMetricLog> logs = abnormalDetectionService.getLatestAbnormalMetricsByDate(date);
+
+        // 결과를 클라이언트에 맞게 매핑 및 반환
+        return getMapList(logs);
+    }
+
+    public List<Map<String, Object>> getThresholdHistoryforType(String type) {
+        List<AbnormalMetricLog> logs = null; //machineType
+
+        // 결과를 클라이언트에 맞게 매핑 및 반환
+        return getMapList(logs);
+    }
+
+    public List<Map<String, Object>> getThresholdHistoryforHostNmae(String hostName) {
+        List<AbnormalMetricLog> logs = null; //machineType("host") + machineName("hostName")
+
+        // 결과를 클라이언트에 맞게 매핑 및 반환
+        return getMapList(logs);
+    }
+
+    public List<Map<String, Object>> getThresholdHistoryforMachineName(String machineName) {
+        List<AbnormalMetricLog> logs = null; //machineName("machineName")
+
+        // 결과를 클라이언트에 맞게 매핑 및 반환
+        return getMapList(logs);
+    }
+
+    public List<Map<String, Object>> getThresholdHistoryforMessageType(String messageType) {
+        List<AbnormalMetricLog> logs = null; //messageType("messageType")
+
+        // 결과를 클라이언트에 맞게 매핑 및 반환
+        return getMapList(logs);
+    }
+
+    public List<Map<String, Object>> getThresholdHistoryforMetricName(String metricName) {
+        List<AbnormalMetricLog> logs = null; //metricName("metricName")
+
+        // 결과를 클라이언트에 맞게 매핑 및 반환
+        return getMapList(logs);
+    }
+
+
     /**
      *  - 특정 machine Id의 이상 로그 이력 조회
      * @param machineId  조회할 machine Id
