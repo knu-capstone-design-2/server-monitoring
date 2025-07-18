@@ -5,7 +5,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import kr.cs.interdata.api_backend.dto.history_dto.HistoryForMachineId;
+import kr.cs.interdata.api_backend.service.MetricService;
 import kr.cs.interdata.api_backend.service.repository_service.MachineInventoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -109,6 +109,7 @@ public class WebController {
     )
     @PostMapping("/metrics/threshold-setting")
     public ResponseEntity<?> setThreshold(@RequestBody ThresholdSetting dto) {
+        // 서비스로 설정 요청 위임 (에러 발생 시 error 응답)
         ThresholdErrorResponse errorResponse = thresholdService.setThreshold(dto);
 
         if (errorResponse != null) {
@@ -210,7 +211,7 @@ public class WebController {
             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     description = "조회 대상 기계 ID 정보",
                     required = true,
-                    content = @Content(schema = @Schema(implementation = HistoryForMachineId.class))
+                    content = @Content(schema = @Schema(implementation = MachineIdforHistory.class))
             ),
             responses = {
                     @ApiResponse(responseCode = "200", description = "성공",
@@ -239,7 +240,7 @@ public class WebController {
             }
     )
     @PostMapping("/metrics/threshold-history")
-    public ResponseEntity<?> getThresholdHistory(@RequestBody HistoryForMachineId targetId) {
+    public ResponseEntity<?> getThresholdHistory(@RequestBody MachineIdforHistory targetId) {
         return ResponseEntity.ok(thresholdService.getThresholdHistoryforMachineId(targetId));
     }
 
