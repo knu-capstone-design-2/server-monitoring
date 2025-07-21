@@ -109,7 +109,6 @@ public class WebController {
     )
     @PostMapping("/metrics/threshold-setting")
     public ResponseEntity<?> setThreshold(@RequestBody ThresholdSetting dto) {
-        // 서비스로 설정 요청 위임 (에러 발생 시 error 응답)
         ThresholdErrorResponse errorResponse = thresholdService.setThreshold(dto);
 
         if (errorResponse != null) {
