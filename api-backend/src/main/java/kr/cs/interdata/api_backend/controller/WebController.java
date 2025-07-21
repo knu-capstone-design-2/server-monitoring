@@ -237,7 +237,7 @@ public class WebController {
                     )
             }
     )
-    @PostMapping("/metrics/threshold-history")
+    @GetMapping("/metrics/history")
     public ResponseEntity<?> getThresholdHistory(
             @RequestParam(required = false) String date,
             @RequestParam(required = false) String machineType,
