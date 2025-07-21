@@ -193,6 +193,45 @@ public class AbnormalDetectionService {
     }
 
     /**
+     *  - type과 data로 abnormal log를 필터링하여 최대 50개까지의 로그를 조회한다.
+     * @param type  필터링 타입
+     * @param data  필터링할 값
+     * @return  필터링해서 가져온 이상 로그들의 집합
+     */
+    public List<AbnormalMetricLog> getLatestAbnormalLogs(String type, String data) {
+        switch (type) {
+            case "data" -> {
+                // 받은 날짜를 LocalDate로 변환
+                LocalDate date = LocalDate.parse(data, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+
+                // 날짜의 시작 시간과 끝 시간 계산
+                LocalDateTime startOfDay = date.atStartOfDay();
+                LocalDateTime endOfDay = date.atTime(LocalTime.MAX);
+
+                // DB 조회 (특정 날짜의 임계치 초과 기록만 가져옴)
+                return abnormalMetricLogRepository.findByTimestampBetween(startOfDay, endOfDay);
+            }
+            case "machineType" -> {
+                return abnormalMetricLogRepository.findTop50ByMachineTypeOrderByTimestampDesc(data);
+            }
+            case "hostName" -> {
+                return abnormalMetricLogRepository.findTop50ByMachineNameOrderByTimestampDesc(data);
+            }
+            case "machineName" -> {
+                return abnormalMetricLogRepository.findTop50HostLogsByMachineName(data);
+            }
+            case "messageType" -> {
+                return abnormalMetricLogRepository.findTop50ByMessageTypeOrderByTimestampDesc(data);
+            }
+            case "metricName" -> {
+                return abnormalMetricLogRepository.findTop50ByMetricNameOrderByTimestampDesc(data);
+            }
+            default -> logger.error("Unknown machine type {}.", type);
+        }
+        return null;
+    }
+
+    /**
      *  - 최근 이상 상태(AbnormalMetricLog)를 조회한다.
      * <p>
      *  - 지정한 id를 기준으로 이상 기록을 조회한다.
@@ -204,7 +243,7 @@ public class AbnormalDetectionService {
     public List<AbnormalMetricLog> getLatestAbnormalMetricsByMachineId(String targetId) {
 
         // DB 조회 (특정 날짜의 Abnormal 기록만 가져옴)
-        return abnormalMetricLogRepository.findTop20BymachineIdOrderByTimestampDesc(targetId);
+        return abnormalMetricLogRepository.findTop20ByMachineIdOrderByTimestampDesc(targetId);
     }
 
     /**

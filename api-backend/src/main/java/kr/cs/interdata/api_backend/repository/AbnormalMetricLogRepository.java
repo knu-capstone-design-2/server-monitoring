@@ -27,7 +27,20 @@ public interface AbnormalMetricLogRepository extends JpaRepository<AbnormalMetri
      * @param targetId  필터링할 machine ID
      * @return  machineId = machineId인 최근 로그들 중 최대 20개를 저장한 리스트
      */
-    List<AbnormalMetricLog> findTop20BymachineIdOrderByTimestampDesc(String targetId);
+    List<AbnormalMetricLog> findTop20ByMachineIdOrderByTimestampDesc(String targetId);
+
+    List<AbnormalMetricLog> findTop50ByMachineTypeOrderByTimestampDesc(String machineType);
+
+    List<AbnormalMetricLog> findTop50ByMachineNameOrderByTimestampDesc(String machineName);
+
+    List<AbnormalMetricLog> findTop50ByMessageTypeOrderByTimestampDesc(String messageType);
+
+    List<AbnormalMetricLog> findTop50ByMetricNameOrderByTimestampDesc(String metricName);
+
+    @Query("SELECT a FROM AbnormalMetricLog a " +
+            "WHERE a.machineType = 'host' AND a.machineName = :machineName " +
+            "ORDER BY a.timestamp DESC")
+    List<AbnormalMetricLog> findTop50HostLogsByMachineName(@Param("machineName") String machineName);
 
     /**
      *  - host machine과 container의 모든 머신에서 가장 최근을 기준으로 최대 50개의 로그들을 리스트로 저장해 반환한다.

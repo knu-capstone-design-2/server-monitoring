@@ -6,14 +6,12 @@ import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import kr.cs.interdata.api_backend.service.MetricService;
+import kr.cs.interdata.api_backend.dto.history_dto.HistoryFilter;
+import kr.cs.interdata.api_backend.dto.history_dto.HistoryForMachineId;
 import kr.cs.interdata.api_backend.service.repository_service.MachineInventoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import kr.cs.interdata.api_backend.dto.*;
 import kr.cs.interdata.api_backend.service.ThresholdService;
@@ -205,13 +203,13 @@ public class WebController {
         return ResponseEntity.ok(Map.of("message", "ok"));
     }
 
-
+    // operation description 수정 필요함.
     @Operation( summary = "특정 기계의 이상 기록 조회",
             description = "특정 기계(targetId)의 이상 기록 목록을 조회합니다.",
             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     description = "조회 대상 기계 ID 정보",
                     required = true,
-                    content = @Content(schema = @Schema(implementation = MachineIdforHistory.class))
+                    content = @Content(schema = @Schema(implementation = HistoryForMachineId.class))
             ),
             responses = {
                     @ApiResponse(responseCode = "200", description = "성공",
@@ -240,8 +238,24 @@ public class WebController {
             }
     )
     @PostMapping("/metrics/threshold-history")
-    public ResponseEntity<?> getThresholdHistory(@RequestBody MachineIdforHistory targetId) {
-        return ResponseEntity.ok(thresholdService.getThresholdHistoryforMachineId(targetId));
+    public ResponseEntity<?> getThresholdHistory(
+            @RequestParam(required = false) String date,
+            @RequestParam(required = false) String machineType,
+            @RequestParam(required = false) String hostName,
+            @RequestParam(required = false) String machineName,
+            @RequestParam(required = false) String messageType,
+            @RequestParam(required = false) String metricName
+    ) {
+        HistoryFilter filter = HistoryFilter.builder()
+                .date(date)
+                .machineType(machineType)
+                .hostName(hostName)
+                .machineName(machineName)
+                .messageType(messageType)
+                .metricName(metricName)
+                .build();
+
+        return ResponseEntity.ok(thresholdService.getThresholdHistory(filter));
     }
 
 
