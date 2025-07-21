@@ -1,4 +1,22 @@
-# 🔎 server-monitoring
+# server-monitoring
+
+## 목차
+
+- [server-monitoring 소개](#server-monitoring-소개)
+- [docker-compose 각 파일 설명 및 사용 방법](#docker-compose-각-파일-설명-및-사용-방법)
+- [실행 전 준비사항](#실행-전-준비사항)
+- [실행 방법](#실행-방법)
+- [환경설정](#환경설정)
+- [server-monitoring 주요 흐름도](#server-monitoring-주요-흐름도)
+- [server-monitoring 주요 특징](#server-monitoring-주요-특징)
+- [구성 예시](#구성-예시)
+- [metrics-backend 모듈 설명](#metrics-backend-모듈-설명)
+  - [모듈 구성](#모듈-구성)
+- [api-backend 모듈 설명](#api-backend-모듈-설명)
+  - [api-backend 주요 기능 및 구조](#api-backend-주요-기능-및-구조)
+- [문의 및 기여](#문의-및-기여)
+  
+## server-monitoring 소개
 
 `server-monitoring`은 실제 서버실의 서버 컴퓨터에 설치하여,  
 **호스트 머신과 해당 서버에 속한 모든 컨테이너의 메트릭(자원 사용량 등)을 실시간으로 수집하고 모니터링할 수 있도록 설계된 시스템**입니다.
@@ -10,7 +28,7 @@ Docker 환경에서 collector를 실행하면 서버 컴퓨터의 호스트 및 
 
 ---
 
-## 📁 (중요) docker-compose 각 파일 설명 및 **사용 방법**
+## docker-compose 각 파일 설명 및 **사용 방법**
 
 - docker-compose.collector.yml  
   **메트릭을 수집하려는 컴퓨터들의 도커에 설치해 실행시킵니다.**
@@ -27,7 +45,7 @@ Docker 환경에서 collector를 실행하면 서버 컴퓨터의 호스트 및 
 
 ---
 
-## ⚙️ 실행 전 준비사항
+## 실행 전 준비사항
 
 - **Docker 설치**  
   이 프로젝트는 Docker 환경에서 동작하므로, 먼저 Docker가 설치되어 있어야 합니다.  
@@ -38,12 +56,12 @@ Docker 환경에서 collector를 실행하면 서버 컴퓨터의 호스트 및 
 ---
 
 
-## 🚀 실행 방법
+## 실행 방법
 
 
 #### 1. 환경설정
 - 1-1. 폴더 최상위 루트에 .env파일을 만들어 환경설정을 해준다.
-  - 환경설정은 아래의 **💻 환경설정** 부분을 참고하세요!
+  - 환경설정은 아래의 **환경설정** 부분을 참고하세요!
 
 ---
 #### 2. 해당 컴퓨터에 시스템을 올리기 전 이미지 파일 생성 단계
@@ -91,7 +109,7 @@ docker-compose -f docker-compose.collector.yml up -d
 
 ---
 
-## 💻 환경설정
+## 환경설정
 - 💡 최상위 경로에 .env 파일이 없다면 **반드시** 새로 생성합니다.
 ```bash
 TZ=Asia/Seoul   # 변경 가능
@@ -155,7 +173,7 @@ API_BASE_URL=http://api-backend:8004    # 필수
 
 `metrics-backend`는 컨테이너 및 호스트 머신에서 메트릭 데이터를 수집하고, Kafka를 통해 전송 및 처리하는 백엔드 시스템입니다. 이 프로젝트는 메트릭 수집 → Kafka 전송 → 데이터 수집 및 전송의 흐름을 중심으로 구성되며, Docker 환경에서 실행됩니다.
 
-## 📁 모듈 구성
+## 모듈 구성
 
 - **container-data-collector**  
   컨테이너 머신의 자원 사용 데이터를 수집합니다.
@@ -184,7 +202,7 @@ API_BASE_URL=http://api-backend:8004    # 필수
 - 날짜별 임계치 초과 데이터 조회, 임계치 설정/조회 등 다양한 API 제공
 - 클라이언트와 백엔드 서버 간 데이터 흐름을 중계하는 브릿지 역할
 
-## 📁 api-backend 주요 기능 및 구조
+## api-backend 주요 기능 및 구조
 
 - **데이터 관리**  
   DB 초기화, 데이터 저장, 조회, 수정 등 데이터베이스 관련 모든 API 처리
