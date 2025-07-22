@@ -214,10 +214,10 @@ public class AbnormalDetectionService {
             case "machineType" -> {
                 return abnormalMetricLogRepository.findTop50ByMachineTypeOrderByTimestampDesc(data);
             }
-            case "hostName" -> {
+            case "machineName" -> {
                 return abnormalMetricLogRepository.findTop50ByMachineNameOrderByTimestampDesc(data);
             }
-            case "machineName" -> {
+            case "hostName" -> {
                 return abnormalMetricLogRepository.findTop50HostLogsByMachineName(data);
             }
             case "messageType" -> {
