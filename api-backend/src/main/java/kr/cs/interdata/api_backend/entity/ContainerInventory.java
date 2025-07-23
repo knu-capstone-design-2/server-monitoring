@@ -17,6 +17,7 @@ import lombok.Setter;
                 @UniqueConstraint(columnNames = {"hostName", "containerName"})
         }
 )
+
 @Getter
 @Setter
 public class ContainerInventory {
