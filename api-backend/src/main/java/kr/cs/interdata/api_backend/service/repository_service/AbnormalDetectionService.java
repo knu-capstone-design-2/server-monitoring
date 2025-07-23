@@ -21,15 +21,19 @@ public class AbnormalDetectionService {
     private final Logger logger = LoggerFactory.getLogger(AbnormalDetectionService.class);
 
     @Autowired
+    private ContainerInventoryService containerInventoryService;
+
+
+    @Autowired
     public AbnormalDetectionService(
-            AbnormalMetricLogRepository abnormalMetricLogRepository){
+            AbnormalMetricLogRepository abnormalMetricLogRepository) {
         this.abnormalMetricLogRepository = abnormalMetricLogRepository;
     }
 
     /**
-     *  - 이상 로그를 저장하는 메서드 1
+     * - 이상 로그를 저장하는 메서드 1
      * <p>
-     *  - 데이터를 {@code AbnormalMetricLog}에 저장한다.
+     * - 데이터를 {@code AbnormalMetricLog}에 저장한다.
      * </p>
      *
      * @param type      이상값이 발생한 머신의 type
@@ -41,10 +45,10 @@ public class AbnormalDetectionService {
      * @param timestamp 이상값이 발생한 시각
      */
     public void storeThresholdExceeded(String type,
-                               String id,
-                               String name,
-                               String metric,
-                               String threshold, String value, LocalDateTime timestamp) {
+                                       String id,
+                                       String name,
+                                       String metric,
+                                       String threshold, String value, LocalDateTime timestamp) {
         AbnormalMetricLog abn = new AbnormalMetricLog();
 
         abn.setMessageType("thresholdExceeded");
@@ -52,6 +56,9 @@ public class AbnormalDetectionService {
         abn.setMachineType(type);
         abn.setMachineId(id);
         abn.setMachineName(name);
+
+        abn.setHostName(resolveHostName(type, id, name));
+
         abn.setMetricName(metric);
         abn.setThreshold(Double.valueOf(threshold));
         abn.setValue(Double.valueOf(value));
@@ -60,10 +67,10 @@ public class AbnormalDetectionService {
     }
 
     /**
-     *  - 이상 로그를 저장하는 메서드 2
-     *  <p>
-     *  - 데이터를 {@code AbnormalMetricLog}에 저장한다.
-     *  </p>
+     * - 이상 로그를 저장하는 메서드 2
+     * <p>
+     * - 데이터를 {@code AbnormalMetricLog}에 저장한다.
+     * </p>
      *
      * @param type      이상값이 발생한 머신의 type
      * @param id        이상값이 발생한 머신의 ID
@@ -85,6 +92,9 @@ public class AbnormalDetectionService {
         abn.setMachineType(type);
         abn.setMachineId(id);
         abn.setMachineName(name);
+
+        abn.setHostName(resolveHostName(type, id, name));
+
         abn.setMetricName(metric);
         abn.setThreshold(Double.valueOf(threshold));
         abn.setValue(Double.valueOf(value));
@@ -93,10 +103,10 @@ public class AbnormalDetectionService {
     }
 
     /**
-     *  - 이상 로그를 저장하는 메서드 3
-     *  <p>
-     *  - 데이터를 {@code AbnormalMetricLog}에 저장한다.
-     *  </p>
+     * - 이상 로그를 저장하는 메서드 3
+     * <p>
+     * - 데이터를 {@code AbnormalMetricLog}에 저장한다.
+     * </p>
      *
      * @param type      이상값이 발생한 머신의 type
      * @param id        이상값이 발생한 머신의 ID
@@ -114,6 +124,9 @@ public class AbnormalDetectionService {
         abn.setMachineType(type);
         abn.setMachineId(id);
         abn.setMachineName(name);
+
+        abn.setHostName(resolveHostName(type, id, name));
+
         abn.setTimestamp(timestamp);
         abnormalMetricLogRepository.save(abn);
     }
@@ -140,6 +153,9 @@ public class AbnormalDetectionService {
         abn.setMachineType(type);
         abn.setMachineId(id);
         abn.setMachineName(name);
+
+        abn.setHostName(resolveHostName(type, id, name));
+
         abn.setTimestamp(timestamp);
         abnormalMetricLogRepository.save(abn);
     }
@@ -166,15 +182,18 @@ public class AbnormalDetectionService {
         abn.setMachineType(type);
         abn.setMachineId(id);
         abn.setMachineName(name);
+
+        abn.setHostName(resolveHostName(type, id, name));
+
         abn.setTimestamp(timestamp);
         abnormalMetricLogRepository.save(abn);
     }
 
 
     /**
-     *  - 최근 이상 상태(AbnormalMetricLog)를 조회한다.
+     * - 최근 이상 상태(AbnormalMetricLog)를 조회한다.
      * <p>
-     *  - 지정한 날짜를 기준으로 임계값을 초과한 기록을 조회한다.
+     * - 지정한 날짜를 기준으로 임계값을 초과한 기록을 조회한다.
      * </p>
      *
      * @param targetDate 조회할 날짜 (yyyy-MM-dd)
@@ -193,10 +212,11 @@ public class AbnormalDetectionService {
     }
 
     /**
-     *  - type과 data로 abnormal log를 필터링하여 최대 50개까지의 로그를 조회한다.
-     * @param type  필터링 타입
-     * @param data  필터링할 값
-     * @return  필터링해서 가져온 이상 로그들의 집합
+     * - type과 data로 abnormal log를 필터링하여 최대 50개까지의 로그를 조회한다.
+     *
+     * @param type 필터링 타입
+     * @param data 필터링할 값
+     * @return 필터링해서 가져온 이상 로그들의 집합
      */
     public List<AbnormalMetricLog> getLatestAbnormalLogs(String type, String data) {
         switch (type) {
@@ -232,9 +252,9 @@ public class AbnormalDetectionService {
     }
 
     /**
-     *  - 최근 이상 상태(AbnormalMetricLog)를 조회한다.
+     * - 최근 이상 상태(AbnormalMetricLog)를 조회한다.
      * <p>
-     *  - 지정한 id를 기준으로 이상 기록을 조회한다.
+     * - 지정한 id를 기준으로 이상 기록을 조회한다.
      * </p>
      *
      * @param targetId 조회할 targetId (ex. host001, container002, ...)
@@ -249,10 +269,10 @@ public class AbnormalDetectionService {
     /**
      * - 최근 이상 상태(AbnormalMetricLog)를 조회한다.
      * <p>
-     *  - 최근 날짜를 기준으로 모든 머신에서의 이상 기록을 조회한다.
+     * - 최근 날짜를 기준으로 모든 머신에서의 이상 기록을 조회한다.
      * </p>
      *
-     * @return  조회한 이상 기록 리스트
+     * @return 조회한 이상 기록 리스트
      */
     public List<AbnormalMetricLog> getLatestAbnormalMetrics() {
 
@@ -261,7 +281,7 @@ public class AbnormalDetectionService {
     }
 
     /**
-     *  - 매일 새벽 3시에 7일 지난 로그 삭제
+     * - 매일 새벽 3시에 7일 지난 로그 삭제
      */
     @Scheduled(cron = "0 0 3 * * *")
     public void deleteOldAbnormalLogs() {
@@ -271,5 +291,18 @@ public class AbnormalDetectionService {
         logger.info("[이상로그삭제] 7일 이상된 로그 {} 건 삭제 완료", deleted);
     }
 
+    private String resolveHostName(String machineType, String machineId, String machineName) {
+        if ("host".equalsIgnoreCase(machineType)) {
+            return machineName;
+        } else if ("container".equalsIgnoreCase(machineType)) {
+            return containerInventoryService.getHostNameByContainerId(machineId);
+        } else {
+            return "unknown";
+        }
+    }
+
 
 }
+
+
+

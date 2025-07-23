@@ -1,11 +1,14 @@
 package kr.cs.interdata.api_backend.service;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -16,6 +19,7 @@ import kr.cs.interdata.api_backend.dto.history_dto.HistoryFilter;
 import kr.cs.interdata.api_backend.dto.history_dto.HistoryForMachineId;
 import kr.cs.interdata.api_backend.entity.AbnormalMetricLog;
 import kr.cs.interdata.api_backend.infra.ThresholdStore;
+import kr.cs.interdata.api_backend.repository.AbnormalMetricLogRepository;
 import kr.cs.interdata.api_backend.service.repository_service.AbnormalDetectionService;
 import kr.cs.interdata.api_backend.service.repository_service.ContainerInventoryService;
 import kr.cs.interdata.api_backend.service.repository_service.MonitoringDefinitionService;
@@ -42,6 +46,7 @@ public class ThresholdService {
     private final MonitoringDefinitionService monitoringDefinitionService;
     private final ContainerInventoryService containerInventoryService;
     private final ThresholdStore thresholdStore;
+    private AbnormalMetricLogRepository abnormalMetricLogRepository;
 
 
     @Autowired
@@ -255,11 +260,88 @@ public class ThresholdService {
      * @param filter    필터링 데이터
      * @return  필터링한 최대 50개의 로그들
      */
+
+    public List<Map<String, Object>> getThresholdHistory(HistoryFilter filter) {
+// (1) 메서드 시작 직후, 입력값이 제대로 들어오는지 확인!
+        System.out.println("[LOG] getThresholdHistory 메서드 진입");
+        System.out.println("[LOG] 전달된 파라미터: " + filter);
+
+
+// 날짜 조건 처리
+        LocalDateTime start = null;
+        LocalDateTime end = null;
+        if (filter.getDate() != null) {
+            try {
+                LocalDate parsedDate = LocalDate.parse(filter.getDate());
+                start = parsedDate.atStartOfDay();
+                end = parsedDate.atTime(LocalTime.MAX);
+            } catch (Exception e) {
+                System.out.println("[ERROR] 날짜 변환 오류: " + filter.getDate());
+                e.printStackTrace();
+            }
+        }
+
+// (2) 실제로 DB에 쿼리 보내기 직전에, 어떤 값이 들어가는지 체크!
+        System.out.println("[LOG] findFilteredLogs 호출 파라미터:");
+        System.out.println(" start=" + start);
+        System.out.println(" end=" + end);
+        System.out.println(" machineType=" + filter.getMachineType());
+        System.out.println(" hostName=" + filter.getHostName());
+        System.out.println(" machineName=" + filter.getMachineName());
+        System.out.println(" messageType=" + filter.getMessageType());
+        System.out.println(" metricName=" + filter.getMetricName());
+
+        try {
+            List<AbnormalMetricLog> logs = abnormalMetricLogRepository.findFilteredLogs(
+                    start,
+                    end,
+                    filter.getMachineType(),
+                    filter.getHostName(),
+                    filter.getMachineName(),
+                    filter.getMessageType(),
+                    filter.getMetricName()
+            );
+
+            System.out.println("[LOG] 로그 쿼리 결과 개수: " + logs.size());
+
+            return logs.stream()
+                    .limit(50)
+                    .map(log -> {
+                        try {
+                            Map<String, Object> map = new LinkedHashMap<>();
+                            map.put("messageType", log.getMessageType());
+                            map.put("machineType", log.getMachineType());
+                            map.put("machineId", log.getMachineId());
+                            map.put("machineName", log.getMachineName());
+                            map.put("hostName", log.getHostName());
+                            map.put("metricName", log.getMetricName());
+                            map.put("threshold", log.getThreshold());
+                            map.put("value", log.getValue());
+                            map.put("timestamp", log.getTimestamp());
+                            return map;
+                        } catch (Exception e) {
+// (3) 한 줄에서라도 데이터 매핑이 오류나면 여기서도 찍어줍니다!
+                            System.out.println("[ERROR] map 변환 중 오류 발생! 상세: " + e.getMessage());
+                            e.printStackTrace();
+                            return null;
+                        }
+                    })
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toList());
+
+        } catch (Exception e) {
+// (4) 그 외의 모든 에러는 여기서 다 잡아줍니다!
+            System.out.println("[ERROR] getThresholdHistory 전체 처리 중 오류 발생: " + e.getMessage());
+            e.printStackTrace();
+            return Collections.emptyList();
+        }
+    }
+    /**
     public List<Map<String, Object>> getThresholdHistory(HistoryFilter filter) {
         LocalDateTime start = null;
         LocalDateTime end = null;
 
-        // ✅ 날짜 파싱
+        // 날짜 파싱
         if (filter.getDate() != null) {
             try {
                 LocalDate parsedDate = LocalDate.parse(filter.getDate());
@@ -272,7 +354,7 @@ public class ThresholdService {
         }
 
         try {
-            // ✅ 복합 조건 통합 조회
+            // 복합 조건 통합 조회
             List<AbnormalMetricLog> logs = abnormalMetricLogRepository.findFilteredLogs(
                     start,
                     end,
@@ -284,7 +366,7 @@ public class ThresholdService {
             );
 
             System.out.println("[INFO] 조회된 로그 수: " + logs.size());
-            return getMapList(logs); // 🚀 map 변환 메서드 호출
+            return getMapList(logs); // map 변환 메서드 호출
 
         } catch (Exception e) {
             System.out.println("[ERROR] 임계치 로그 조회 중 예외 발생");
@@ -293,7 +375,7 @@ public class ThresholdService {
         }
     }
 
-
+**/
     /**
      *  - 모든 머신의 이상 로그 이력 조회
      *

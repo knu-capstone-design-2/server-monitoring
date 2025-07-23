@@ -33,4 +33,12 @@ public class ContainerInventoryService {
 
         return String.valueOf(containerInventoryRepository.findHostNameByContainerIdAndContainerName(containerId, containerName));
     }
+
+    public String getHostNameByContainerId(String containerId) {
+        String hostName = containerInventoryRepository.findHostNameByContainerId(containerId);
+        return (hostName != null) ? hostName : "unknown"; // null-safe 처리
+    }
+
+
+
 }

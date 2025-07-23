@@ -35,6 +35,8 @@ public class AbnormalMetricLog {
     private String machineType; // anomaly machine's type
     private String machineId;   // anomaly machine's id
     private String machineName; // anomaly machine's name
+    private String hostName; // ← 이 한 줄이 반드시 있어야 돼요!
+
 
     private String metricName;  // anomaly metric's name
     private Double threshold;   // anomaly가 생긴 당시의 threshold
