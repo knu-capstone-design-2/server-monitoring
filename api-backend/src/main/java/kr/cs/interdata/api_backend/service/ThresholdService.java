@@ -46,17 +46,19 @@ public class ThresholdService {
     private final MonitoringDefinitionService monitoringDefinitionService;
     private final ContainerInventoryService containerInventoryService;
     private final ThresholdStore thresholdStore;
-    private AbnormalMetricLogRepository abnormalMetricLogRepository;
+    private final AbnormalMetricLogRepository abnormalMetricLogRepository;
 
 
     @Autowired
     public ThresholdService(ThresholdStore thresholdStore,
                             AbnormalDetectionService abnormalDetectionService,
-                            MonitoringDefinitionService monitoringDefinitionService, ContainerInventoryService containerInventoryService) {
+                            MonitoringDefinitionService monitoringDefinitionService, ContainerInventoryService containerInventoryService
+                            ,AbnormalMetricLogRepository abnormalMetricLogRepository) {
         this.thresholdStore = thresholdStore;
         this.abnormalDetectionService = abnormalDetectionService;
         this.monitoringDefinitionService = monitoringDefinitionService;
         this.containerInventoryService = containerInventoryService;
+        this.abnormalMetricLogRepository = abnormalMetricLogRepository;
     }
 
     // ==============================
@@ -262,26 +264,29 @@ public class ThresholdService {
      */
 
     public List<Map<String, Object>> getThresholdHistory(HistoryFilter filter) {
-// (1) 메서드 시작 직후, 입력값이 제대로 들어오는지 확인!
         System.out.println("[LOG] getThresholdHistory 메서드 진입");
         System.out.println("[LOG] 전달된 파라미터: " + filter);
 
-
-// 날짜 조건 처리
         LocalDateTime start = null;
         LocalDateTime end = null;
+
         if (filter.getDate() != null) {
             try {
-                LocalDate parsedDate = LocalDate.parse(filter.getDate());
-                start = parsedDate.atStartOfDay();
-                end = parsedDate.atTime(LocalTime.MAX);
+                LocalDate date = LocalDate.parse(filter.getDate());
+                start = date.atStartOfDay();
+                end = date.atTime(LocalTime.MAX);
             } catch (Exception e) {
                 System.out.println("[ERROR] 날짜 변환 오류: " + filter.getDate());
                 e.printStackTrace();
             }
         }
 
-// (2) 실제로 DB에 쿼리 보내기 직전에, 어떤 값이 들어가는지 체크!
+        boolean isOnlyDate = filter.getMachineType() == null &&
+                filter.getHostName() == null &&
+                filter.getMachineName() == null &&
+                filter.getMessageType() == null &&
+                filter.getMetricName() == null;
+
         System.out.println("[LOG] findFilteredLogs 호출 파라미터:");
         System.out.println(" start=" + start);
         System.out.println(" end=" + end);
@@ -292,15 +297,22 @@ public class ThresholdService {
         System.out.println(" metricName=" + filter.getMetricName());
 
         try {
-            List<AbnormalMetricLog> logs = abnormalMetricLogRepository.findFilteredLogs(
-                    start,
-                    end,
-                    filter.getMachineType(),
-                    filter.getHostName(),
-                    filter.getMachineName(),
-                    filter.getMessageType(),
-                    filter.getMetricName()
-            );
+            List<AbnormalMetricLog> logs;
+
+            if (isOnlyDate) {
+                System.out.println("[INFO] 날짜만 들어온 요청입니다 🗓️");
+                logs = abnormalMetricLogRepository.findByTimestampBetween(start, end);
+            } else {
+                logs = abnormalMetricLogRepository.findFilteredLogs(
+                        start,
+                        end,
+                        filter.getMachineType(),
+                        filter.getHostName(),
+                        filter.getMachineName(),
+                        filter.getMessageType(),
+                        filter.getMetricName()
+                );
+            }
 
             System.out.println("[LOG] 로그 쿼리 결과 개수: " + logs.size());
 
@@ -320,8 +332,7 @@ public class ThresholdService {
                             map.put("timestamp", log.getTimestamp());
                             return map;
                         } catch (Exception e) {
-// (3) 한 줄에서라도 데이터 매핑이 오류나면 여기서도 찍어줍니다!
-                            System.out.println("[ERROR] map 변환 중 오류 발생! 상세: " + e.getMessage());
+                            System.out.println("[ERROR] map 변환 중 오류 발생: " + e.getMessage());
                             e.printStackTrace();
                             return null;
                         }
@@ -330,12 +341,12 @@ public class ThresholdService {
                     .collect(Collectors.toList());
 
         } catch (Exception e) {
-// (4) 그 외의 모든 에러는 여기서 다 잡아줍니다!
             System.out.println("[ERROR] getThresholdHistory 전체 처리 중 오류 발생: " + e.getMessage());
             e.printStackTrace();
             return Collections.emptyList();
         }
     }
+
     /**
     public List<Map<String, Object>> getThresholdHistory(HistoryFilter filter) {
         LocalDateTime start = null;
