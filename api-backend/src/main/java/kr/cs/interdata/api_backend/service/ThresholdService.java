@@ -330,6 +330,13 @@ public class ThresholdService {
                             map.put("threshold", log.getThreshold());
                             map.put("value", log.getValue());
                             map.put("timestamp", log.getTimestamp());
+
+                            if (log.getTimestamp() != null) {
+                                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
+                                map.put("timestamp", log.getTimestamp().format(formatter));
+                            } else {
+                                map.put("timestamp", null);
+                            }
                             return map;
                         } catch (Exception e) {
                             System.out.println("[ERROR] map 변환 중 오류 발생: " + e.getMessage());
