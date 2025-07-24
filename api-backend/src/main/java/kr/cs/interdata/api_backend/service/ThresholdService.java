@@ -330,6 +330,13 @@ public class ThresholdService {
                             map.put("threshold", log.getThreshold());
                             map.put("value", log.getValue());
                             map.put("timestamp", log.getTimestamp());
+
+                            if (log.getTimestamp() != null) {
+                                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
+                                map.put("timestamp", log.getTimestamp().format(formatter));
+                            } else {
+                                map.put("timestamp", null);
+                            }
                             return map;
                         } catch (Exception e) {
                             System.out.println("[ERROR] map 변환 중 오류 발생: " + e.getMessage());
@@ -419,10 +426,7 @@ public class ThresholdService {
             // ContainerInventory 엔티티의 machineId와 machineName을 파싱해서 둘 조합이 있으면 종속된 hostName을 넘겨줌
             String hostName;
             if (log.getMachineType().equals("container")) {
-                hostName = containerInventoryService.addHostNameByContainerIdAndContainerName(
-                        log.getMachineId(),
-                        log.getMachineName()
-                );
+                hostName = containerInventoryService.getHostNameByContainerId(log.getMachineId());
             } else {
                 hostName = log.getMachineName();
             }
