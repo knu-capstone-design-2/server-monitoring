@@ -419,10 +419,7 @@ public class ThresholdService {
             // ContainerInventory 엔티티의 machineId와 machineName을 파싱해서 둘 조합이 있으면 종속된 hostName을 넘겨줌
             String hostName;
             if (log.getMachineType().equals("container")) {
-                hostName = containerInventoryService.addHostNameByContainerIdAndContainerName(
-                        log.getMachineId(),
-                        log.getMachineName()
-                );
+                hostName = containerInventoryService.getHostNameByContainerId(log.getMachineId());
             } else {
                 hostName = log.getMachineName();
             }
