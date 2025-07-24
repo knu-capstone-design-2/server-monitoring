@@ -355,46 +355,6 @@ public class ThresholdService {
     }
 
     /**
-    public List<Map<String, Object>> getThresholdHistory(HistoryFilter filter) {
-        LocalDateTime start = null;
-        LocalDateTime end = null;
-
-        // 날짜 파싱
-        if (filter.getDate() != null) {
-            try {
-                LocalDate parsedDate = LocalDate.parse(filter.getDate());
-                start = parsedDate.atStartOfDay();
-                end = parsedDate.atTime(LocalTime.MAX);
-            } catch (Exception e) {
-                System.out.println("[ERROR] 날짜 파싱 오류: " + filter.getDate());
-                e.printStackTrace();
-            }
-        }
-
-        try {
-            // 복합 조건 통합 조회
-            List<AbnormalMetricLog> logs = abnormalMetricLogRepository.findFilteredLogs(
-                    start,
-                    end,
-                    filter.getMachineType(),
-                    filter.getHostName(),
-                    filter.getMachineName(),
-                    filter.getMessageType(),
-                    filter.getMetricName()
-            );
-
-            System.out.println("[INFO] 조회된 로그 수: " + logs.size());
-            return getMapList(logs); // map 변환 메서드 호출
-
-        } catch (Exception e) {
-            System.out.println("[ERROR] 임계치 로그 조회 중 예외 발생");
-            e.printStackTrace();
-            return Collections.emptyList();
-        }
-    }
-
-**/
-    /**
      *  - 모든 머신의 이상 로그 이력 조회
      *
      * @return  이력 리스트 (최신 기준으로 최대 50개)
