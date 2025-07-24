@@ -300,8 +300,8 @@ public class ThresholdService {
             List<AbnormalMetricLog> logs;
 
             if (isOnlyDate) {
-                System.out.println("[INFO] 날짜만 들어온 요청입니다 🗓️");
-                logs = abnormalMetricLogRepository.findByTimestampBetween(start, end);
+                System.out.println("[INFO] 날짜만 들어온 요청입니다 ");
+                logs=abnormalMetricLogRepository.findByTimestampBetweenOrderByTimestampDesc(start, end);
             } else {
                 logs = abnormalMetricLogRepository.findFilteredLogs(
                         start,
