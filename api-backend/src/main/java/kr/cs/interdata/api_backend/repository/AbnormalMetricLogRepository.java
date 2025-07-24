@@ -37,6 +37,13 @@ public interface AbnormalMetricLogRepository extends JpaRepository<AbnormalMetri
 
     List<AbnormalMetricLog> findTop50ByMetricNameOrderByTimestampDesc(String metricName);
 
+    @Query("SELECT l FROM AbnormalMetricLog l WHERE l.timestamp BETWEEN :start AND :end ORDER BY l.timestamp DESC")
+    List<AbnormalMetricLog> findByTimestampBetweenOrderByTimestampDesc(
+            @Param("start") LocalDateTime start,
+            @Param("end") LocalDateTime end
+    );
+
+
     @Query("SELECT l FROM AbnormalMetricLog l " +
             "WHERE (:start IS NULL OR l.timestamp >= :start) " +
             "AND (:end IS NULL OR l.timestamp <= :end) " +
