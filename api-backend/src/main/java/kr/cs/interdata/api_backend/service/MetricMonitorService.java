@@ -78,7 +78,7 @@ public class MetricMonitorService {
     }
 
     // 감시용 스케줄러
-    @Scheduled(fixedRate = 30_000)
+    @Scheduled(fixedRate = 10_000)
     public void checkMetricTimeouts() {
         LocalDateTime now = LocalDateTime.now();
         Map<String, MachineMetricTimestamp> snapshot = metricTimestampCache.asMap();
