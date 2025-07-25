@@ -34,6 +34,21 @@ public class ContainerInventoryService {
         return String.valueOf(containerInventoryRepository.findHostNameByContainerIdAndContainerName(containerId, containerName));
     }
 
+    /**
+     * containerId를 이용해 컨테이너의 hostName을 조회하는 메서드.
+     *
+     * <p>
+     * - 내부적으로 Repository에서 containerId로 hostName을 조회합니다.
+     * - 조회 결과가 null일 경우 "unknown" 문자열을 반환하여, NullPointerException 등 예외를 방지합니다(null-safe).
+     * - 실제 hostName 값이 존재하면 해당 값을 그대로 반환합니다.
+     *
+     * <b>주 사용 예:</b>
+     * - 컨테이너 ID만으로 소속 hostName이 필요할 때 (예: 이상 로그 기록 시 자동 매핑)
+     * - inventory DB에 데이터가 없거나 outdated된 경우에도 안전하게 "unknown" 반환.
+     *
+     * @param containerId  컨테이너의 고유 식별자(ID)
+     * @return             해당 containerId의 hostName, 없으면 "unknown"
+     */
     public String getHostNameByContainerId(String containerId) {
         String hostName = containerInventoryRepository.findHostNameByContainerId(containerId);
         return (hostName != null) ? hostName : "unknown"; // null-safe 처리
