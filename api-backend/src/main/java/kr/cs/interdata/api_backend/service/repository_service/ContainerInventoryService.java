@@ -39,6 +39,18 @@ public class ContainerInventoryService {
         return (hostName != null) ? hostName : "unknown"; // null-safe 처리
     }
 
+    public String fallbackHostName(String containerId, String containerName) {
+        String hostName = null;
+        if (containerId != null) {
+            hostName = containerInventoryRepository.findHostNameByContainerIdAndContainerName(containerId, containerName);
+        }
+        if (hostName == null && containerName != null) {
+            hostName = containerInventoryRepository.findHostNameByContainerName(containerName);
+        }
+        return (hostName != null) ? hostName : "unknown";
+    }
+
+
 
 
 }

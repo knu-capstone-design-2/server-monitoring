@@ -43,4 +43,7 @@ public interface ContainerInventoryRepository extends JpaRepository<ContainerInv
 
     @Query("SELECT c.hostName FROM ContainerInventory c WHERE c.containerId = :containerId")
     String findHostNameByContainerId(@Param("containerId") String containerId);
+
+    @Query("SELECT c.hostName FROM ContainerInventory c WHERE c.containerName = :containerName")
+    String findHostNameByContainerName(@Param("containerName") String containerName);
 }
