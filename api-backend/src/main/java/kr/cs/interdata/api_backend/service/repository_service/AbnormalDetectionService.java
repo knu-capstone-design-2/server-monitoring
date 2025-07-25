@@ -291,14 +291,30 @@ public class AbnormalDetectionService {
         logger.info("[이상로그삭제] 7일 이상된 로그 {} 건 삭제 완료", deleted);
     }
 
-
-
+    /**
+     * 머신 타입과 ID/이름 정보로 hostName을 결정하는 유틸 함수.
+     *
+     * <p>
+     * - host면 machineName을 그대로 hostName으로 사용.
+     * - container면 containerInventoryService에서 containerId(및 이름)로 hostName을 찾아옴.
+     * - 둘 다 아니거나, inventory에서 못 찾은 경우에는 "unknown" 문자열 반환.
+     *
+     * <b>주요 용도:</b> 이상 로그(AbnormalMetricLog)를 저장할 때, 각 로그의 hostName을 설정하는데 사용됨.
+     *
+     * @param machineType  "host" 또는 "container" 등 머신 종류 구분자
+     * @param machineId    머신의 고유 식별자
+     * @param machineName  머신 이름(컨테이너는 containerName, host는 hostName)
+     * @return 해당 머신의 hostName, 찾지 못하면 "unknown" 반환
+     */
     private String resolveHostName(String machineType, String machineId, String machineName) {
         if ("host".equalsIgnoreCase(machineType)) {
+            //host: machineName 값을 hostName으로 사용
             return machineName;
         } else if ("container".equalsIgnoreCase(machineType)) {
+            //container: containerInventory에서 hostName을 lookup, 없는 경우 unknown으로 반환
             return containerInventoryService.fallbackHostName(machineId,machineName);
         } else {
+            //정의 되지 않은 머신 유형 : unknown으로 반환
             return "unknown";
         }
     }
