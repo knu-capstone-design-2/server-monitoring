@@ -87,7 +87,7 @@ public class MetricMonitorService {
             String key = entry.getKey();
             MachineMetricTimestamp data = entry.getValue();
 
-            if (Duration.between(data.getTimestamp(), now).toSeconds() >= 60) {
+            if (Duration.between(data.getTimestamp(), now).toSeconds() >= 10) {
                 // key 형식: type:machineName:parentHostName
                 String[] parts = key.split(":", 3);
                 String type = parts[0];
