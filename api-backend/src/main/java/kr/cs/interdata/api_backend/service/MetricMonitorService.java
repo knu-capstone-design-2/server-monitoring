@@ -95,6 +95,8 @@ public class MetricMonitorService {
 
                 thresholdService.storeTimeout(type, data.getMachineId(), data.getMachineName(), now);
 
+                metricTimestampCache.invalidate(key);
+
                 logger.warn("store timeout for machineName={} type={} parentHostName={}", parts[1], type, parentHostName);
             }
         }
