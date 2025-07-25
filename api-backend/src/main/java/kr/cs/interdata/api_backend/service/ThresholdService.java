@@ -258,35 +258,44 @@ public class ThresholdService {
     }
 
     /**
-     *  - parameter로 abnormal log를 필터링하여 최대 50개까지의 로그를 조회한다.
-     * @param filter    필터링 데이터
-     * @return  필터링한 최대 50개의 로그들
+     * 이상 로그 이력(AbnormalMetricLog) 조회
+     * - 날짜만 받으면 해당 날짜의 이상 로그를 최신순 50개까지 반환.
+     * - 여러 필터(머신 유형, 호스트명, 메시지타입 등)를 복합적으로 받으면, 조건에 맞는 로그 중 최신순 50개를 반환.
+     * - API 응답은 Map<String, Object> 형태의 리스트로 반환. timestamp는 "yyyy-MM-dd'T'HH:mm:ss" 포맷의 문자열로 변환하여 제공.
+     *
+     * @param filter HistoryFilter (date, machineType, hostName, machineName, messageType, metricName 등)
+     * @return 최근순 50개 이력 로그 Map List
      */
 
     public List<Map<String, Object>> getThresholdHistory(HistoryFilter filter) {
+        //로그 파라미터 및 filter 객체 상태 로그 출력
         System.out.println("[LOG] getThresholdHistory 메서드 진입");
         System.out.println("[LOG] 전달된 파라미터: " + filter);
 
         LocalDateTime start = null;
         LocalDateTime end = null;
 
+        //날짜 파라미터가 있으면 LocalDateTime 범위 파싱
         if (filter.getDate() != null) {
             try {
                 LocalDate date = LocalDate.parse(filter.getDate());
-                start = date.atStartOfDay();
-                end = date.atTime(LocalTime.MAX);
+                start = date.atStartOfDay();// 00:00:00
+                end = date.atTime(LocalTime.MAX);// 23:59:59.999...
             } catch (Exception e) {
                 System.out.println("[ERROR] 날짜 변환 오류: " + filter.getDate());
                 e.printStackTrace();
             }
         }
 
+        //파라미터가 오젝 날짜만 있는 경우(다른 필터 조건은 모두 null)
         boolean isOnlyDate = filter.getMachineType() == null &&
                 filter.getHostName() == null &&
                 filter.getMachineName() == null &&
                 filter.getMessageType() == null &&
                 filter.getMetricName() == null;
 
+        //실제 쿼리 실행 전, 사용된 파라미터 값 로그 출력
+        //잘 되는지 확인하기 위해 넣어놓음.
         System.out.println("[LOG] findFilteredLogs 호출 파라미터:");
         System.out.println(" start=" + start);
         System.out.println(" end=" + end);
@@ -299,10 +308,12 @@ public class ThresholdService {
         try {
             List<AbnormalMetricLog> logs;
 
+            //날짜만 필터 시 : 해당 날짜 범위 내 이상 로그를 최신순(내림차순) 50개로 조회
             if (isOnlyDate) {
                 System.out.println("[INFO] 날짜만 들어온 요청입니다 ");
                 logs=abnormalMetricLogRepository.findByTimestampBetweenOrderByTimestampDesc(start, end);
             } else {
+                //복합필터 사용 시 : 여러 조건을 조합한 쿼리로 최신순 50개 조회
                 logs = abnormalMetricLogRepository.findFilteredLogs(
                         start,
                         end,
@@ -316,6 +327,7 @@ public class ThresholdService {
 
             System.out.println("[LOG] 로그 쿼리 결과 개수: " + logs.size());
 
+            //AdnormalMetricLog 엔티티 -> Map<String,Object> 형식으로 변환(최대 50개)
             return logs.stream()
                     .limit(50)
                     .map(log -> {
@@ -339,15 +351,17 @@ public class ThresholdService {
                             }
                             return map;
                         } catch (Exception e) {
+                            //매핑 변환 중 예외 발생 시, 로그 출력 후 무시
                             System.out.println("[ERROR] map 변환 중 오류 발생: " + e.getMessage());
                             e.printStackTrace();
                             return null;
                         }
                     })
-                    .filter(Objects::nonNull)
+                    .filter(Objects::nonNull)//변환 실패 row 제외
                     .collect(Collectors.toList());
 
         } catch (Exception e) {
+            //전체 처리 과정에서 예외 발생 시 빈 리스트 반환
             System.out.println("[ERROR] getThresholdHistory 전체 처리 중 오류 발생: " + e.getMessage());
             e.printStackTrace();
             return Collections.emptyList();
