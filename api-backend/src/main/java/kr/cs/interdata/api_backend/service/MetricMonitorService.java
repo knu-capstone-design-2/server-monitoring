@@ -78,7 +78,7 @@ public class MetricMonitorService {
     }
 
     // 감시용 스케줄러
-    @Scheduled(fixedRate = 30_000)
+    @Scheduled(fixedRate = 10_000)
     public void checkMetricTimeouts() {
         LocalDateTime now = LocalDateTime.now();
         Map<String, MachineMetricTimestamp> snapshot = metricTimestampCache.asMap();
@@ -87,13 +87,15 @@ public class MetricMonitorService {
             String key = entry.getKey();
             MachineMetricTimestamp data = entry.getValue();
 
-            if (Duration.between(data.getTimestamp(), now).toSeconds() >= 60) {
+            if (Duration.between(data.getTimestamp(), now).toSeconds() >= 10) {
                 // key 형식: type:machineName:parentHostName
                 String[] parts = key.split(":", 3);
                 String type = parts[0];
                 String parentHostName = parts.length == 3 ? parts[2] : null;
 
                 thresholdService.storeTimeout(type, data.getMachineId(), data.getMachineName(), now);
+
+                metricTimestampCache.invalidate(key);
 
                 logger.warn("store timeout for machineName={} type={} parentHostName={}", parts[1], type, parentHostName);
             }
