@@ -291,17 +291,17 @@ public class AbnormalDetectionService {
         logger.info("[이상로그삭제] 7일 이상된 로그 {} 건 삭제 완료", deleted);
     }
 
+
+
     private String resolveHostName(String machineType, String machineId, String machineName) {
         if ("host".equalsIgnoreCase(machineType)) {
             return machineName;
         } else if ("container".equalsIgnoreCase(machineType)) {
-            return containerInventoryService.getHostNameByContainerId(machineId);
+            return containerInventoryService.fallbackHostName(machineId,machineName);
         } else {
             return "unknown";
         }
     }
-
-
 }
 
 
