@@ -9,6 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 @Component
 public class DataInitializer implements CommandLineRunner {
 
@@ -54,39 +56,23 @@ public class DataInitializer implements CommandLineRunner {
 
         // ===== 3. 임계값(over) 등록: 각 메트릭별 한계값(초과 시 위험)을 ThresholdStore에 저장 =====
         // host type - over threshold 값 등록
-        thresholdStore.updateOverThreshold("host", "cpu", 85.0);
-        thresholdStore.updateOverThreshold("host", "memory", 20000000000.0);
-        thresholdStore.updateOverThreshold("host", "diskReadDelta", 40000000.0);
-        thresholdStore.updateOverThreshold("host", "diskWriteDelta", 40000000.0);
-        thresholdStore.updateOverThreshold("host", "networkRx", 300000.0);
-        thresholdStore.updateOverThreshold("host", "networkTx", 300000.0);
-        thresholdStore.updateOverThreshold("host", "temperature", 50.0);
+        List<MetricsByType> allMetrics = metricsByTypeRepository.findAll();
 
-        // container type - over threshold 값 등록
-        thresholdStore.updateOverThreshold("container", "cpu", 85.0);
-        thresholdStore.updateOverThreshold("container", "memory", 20000000000.0);
-        thresholdStore.updateOverThreshold("container", "diskReadDelta", 40000000.0);
-        thresholdStore.updateOverThreshold("container", "diskWriteDelta", 40000000.0);
-        thresholdStore.updateOverThreshold("container", "networkRx", 300000.0);
-        thresholdStore.updateOverThreshold("container", "networkTx", 300000.0);
+        for (MetricsByType metric : allMetrics) {
+            String typeName = metric.getType().getType(); // "host" 또는 "container"
+            String metricName = metric.getMetricName();
 
-        // ===== 4. 임계값(under) 등록: 각 메트릭별 한계값(이하 시 위험)을 ThresholdStore에 저장 =====
-        // host type - under threshold 값 등록
-        thresholdStore.updateUnderThreshold("host", "cpu", 0.0);
-        thresholdStore.updateUnderThreshold("host", "memory", 0.0);
-        thresholdStore.updateUnderThreshold("host", "diskReadDelta", 0.0);
-        thresholdStore.updateUnderThreshold("host", "diskWriteDelta", 0.0);
-        thresholdStore.updateUnderThreshold("host", "networkRx", 0.0);
-        thresholdStore.updateUnderThreshold("host", "networkTx", 0.0);
-        thresholdStore.updateUnderThreshold("host", "temperature", 5.0);
+            // overThreshold 등록
+            if (metric.getOverThresholdValue() != null) {
+                thresholdStore.updateOverThreshold(typeName, metricName, metric.getOverThresholdValue());
+            }
 
-        // container type - under threshold 값 등록
-        thresholdStore.updateUnderThreshold("container", "cpu", 0.0);
-        thresholdStore.updateUnderThreshold("container", "memory", 0.0);
-        thresholdStore.updateUnderThreshold("container", "diskReadDelta", 0.0);
-        thresholdStore.updateUnderThreshold("container", "diskWriteDelta", 0.0);
-        thresholdStore.updateUnderThreshold("container", "networkRx", 0.0);
-        thresholdStore.updateUnderThreshold("container", "networkTx", 0.0);
+            // underThreshold 등록
+            if (metric.getUnderThresholdValue() != null) {
+                thresholdStore.updateUnderThreshold(typeName, metricName, metric.getUnderThresholdValue());
+            }
+        }
+        allMetrics = null;
 
     }
 
